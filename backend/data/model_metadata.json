@@ -1,0 +1,25 @@
+{
+  "features": [
+    "pincode_tier",
+    "pincode_historical_rto",
+    "order_amount",
+    "payment_mode",
+    "is_cod",
+    "checkout_dwell_seconds",
+    "address_entropy",
+    "user_order_count",
+    "user_historical_rto",
+    "device_order_count_24h",
+    "device_unique_vpa_count",
+    "hour_of_day",
+    "distance_km",
+    "category_risk",
+    "ip_reputation_risk",
+    "phone_carrier_risk",
+    "cart_item_count"
+  ],
+  "n_features": 17,
+  "target": "is_loss",
+  "optimal_default_threshold": 0.42,
+  "model_version": "v1.2.0-onnx"
+}

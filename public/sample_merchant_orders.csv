@@ -1,0 +1,11 @@
+order_id,city,order_amount,payment_mode,is_cod,pincode_historical_rto,device_order_count_24h,address_entropy,dwell_seconds
+ORD-IN-101,Mumbai,1499.0,UPI,0,0.09,1,0.88,52
+ORD-IN-102,Patna,4800.0,COD,1,0.38,4,0.41,14
+ORD-IN-103,Bengaluru,2200.0,Card,0,0.11,1,0.92,45
+ORD-IN-104,Muzaffarpur,12500.0,COD,1,0.46,8,0.28,3
+ORD-IN-105,Jaipur,3200.0,COD,1,0.26,2,0.74,28
+ORD-IN-106,Delhi NCR,890.0,UPI,0,0.12,1,0.85,38
+ORD-IN-107,Surat,6400.0,COD,1,0.22,3,0.65,19
+ORD-IN-108,Darbhanga,18900.0,COD,1,0.48,11,0.22,2
+ORD-IN-109,Pune,3499.0,UPI,0,0.13,1,0.89,60
+ORD-IN-110,Lucknow,2999.0,COD,1,0.28,2,0.71,22
