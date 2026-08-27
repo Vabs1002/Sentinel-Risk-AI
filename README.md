@@ -1,9 +1,9 @@
 # SentinelRisk
-### Autonomous Margin Defense and Loss Mitigation Engine for Modern E-Commerce
+### Autonomous Margin Defense and Loss Mitigation Engine for Modern Commerce
 
-SentinelRisk is a production-grade risk intelligence system designed to protect merchant margins from Cash on Delivery (COD) return abuse, multi-account syndicate farming, and card-absent chargeback fraud.
+SentinelRisk is an enterprise risk intelligence platform engineered to protect merchant gross margins from delivery return abuse, multi-account syndicate farming, and payment chargebacks.
 
-Live Production Application: https://sentinel-risk-ai.vercel.app
+Live Production Dashboard: https://sentinel-risk-ai.vercel.app
 Drop-in SDK Script: https://sentinel-risk-ai.vercel.app/sentinel.js
 
 ```
@@ -26,69 +26,67 @@ Drop-in SDK Script: https://sentinel-risk-ai.vercel.app/sentinel.js
 
 ---
 
-## The Core Engineering Problem
+## The Problem Solved
 
-In high-growth e-commerce markets, uncollected delivery returns (RTO) and friendly fraud drain up to 35% of operational profits. Traditional fraud rules operate on rigid static filters that naively reject legitimate buyers, inflating Customer Acquisition Cost (CAC) and losing repeat customer lifetime value.
+In high-velocity online retail, Cash on Delivery (COD) Return-to-Origin (RTO) rates frequently exceed 30 percent, generating massive logistics losses in dead-head shipping freight, transit packaging, and locked inventory. At the same time, collusive fraud rings exploit checkout vulnerabilities by creating multiple fake accounts to farm promotional vouchers or refuse deliveries upon arrival.
 
-SentinelRisk addresses this trade-off by treating risk assessment as an economic optimization problem rather than a simple classification task. The engine balances the cost of an uncollected delivery against the lifetime value of a falsely interrupted customer.
+Traditional fraud filters rely on naive binary blocklists. When an arbitrary rule blocks a legitimate buyer, the merchant suffers a double loss: the gross profit margin of the order and the customer acquisition cost spent to bring that buyer to checkout. 
 
----
-
-## Architectural Pillars and Novelty
-
-### 1. Zero-Cold-Start Pure Tree Inference Engine
-In real-time checkout gateways, millisecond latency budgets rule out heavy external runtimes. SentinelRisk implements a zero-dependency tree evaluator that parses compiled LightGBM tree structures directly into native memory:
-* Traverses 160 decision trees across 17 behavioral features in under 0.40ms on standard single-core compute.
-* Eliminates dynamic C-compilation and runtime shared library dependencies on serverless platforms.
-* Computes exact TreeSHAP log-odds feature attributions dynamically for every scored transaction.
-
-### 2. Cost-Sensitive Economic Loss Matrix
-Standard models optimize for raw accuracy, which fails when class costs are asymmetric. In logistics, missing a fraudulent delivery costs approximately INR 150 in forward and reverse freight. Conversely, falsely declining a good customer destroys the entire gross margin (28%) plus the acquisition cost (INR 420).
-
-SentinelRisk trains with cost-weighted loss penalties:
-* Weight for True Fraud (False Negative Penalty) = INR 150 + 0.10 * Order Amount
-* Weight for Legitimate Buyer (False Positive Penalty) = 0.28 * Order Amount + INR 420
-
-This yields an optimal profit-maximizing decision boundary (theta = 0.42) rather than an arbitrary 0.50 cutoff.
-
-### 3. Bipartite Graph Sentinel (Abuse-Ring Clustering)
-Collusive syndicates bypass single-order filters by rotating phone numbers, disposable VPAs, and shipping addresses across shared physical devices. SentinelRisk constructs an in-memory bipartite network linking:
-* User Account <───> Device Fingerprint <───> UPI VPA <───> Pincode
-
-Using connected component analysis in O(V + E) time, the sentinel identifies multi-account rings with zero network database hops.
-
-### 4. Autonomous Dispute Representment Agent
-When cardholders initiate chargeback claims, merchants lose revenue simply because compiling courier proof of delivery takes days. SentinelRisk automatically correlates:
-1. Geofenced courier delivery logs (GPS coordinates and signed OTP receipt timestamps).
-2. Two-factor authentication traces and device fingerprint telemetry.
-3. Formats audit-compliant rebuttal dossiers adhering to Visa Compelling Evidence 3.0 (CE3.0) and NPCI dispute resolution rules.
+SentinelRisk reframes risk control as an economic optimization challenge. Instead of predicting a generic fraud label, the engine evaluates real-time loss propensity against customer acquisition costs to maximize Net Economic Value.
 
 ---
 
-## Benchmark Evaluation Results
+## Core System Capabilities
 
-Evaluated on a frozen held-out test split of 9,000 transactions:
+### 1. Sub-Millisecond Pure Tree Inference
+Gateway payment flows operate under strict latency budgets. Rather than relying on heavy external runtime environments or native C shared libraries that trigger cold-start penalties, SentinelRisk implements an in-memory tree evaluator that parses compiled LightGBM tree structures directly into native memory buffers.
 
-| Evaluation Metric | Measured Benchmark | Practical Significance |
+Traversing 160 decision trees across 17 behavioral signals takes only 0.36 milliseconds on single-core CPU compute, returning exact TreeSHAP log-odds feature attributions for full auditability.
+
+### 2. Cost-Sensitive Asymmetric Loss Optimization
+Conventional classifiers treat False Positives and False Negatives equally. In commercial logistics, the cost of a missed return order equals the forward and reverse shipping fee (approximately INR 150), whereas falsely rejecting a good customer destroys the entire gross merchandise margin (28 percent) plus customer acquisition costs (INR 420).
+
+SentinelRisk weights training loss dynamically:
+
+Cost of False Negative = 150 + 0.10 * Order Amount
+Cost of False Positive = 0.28 * Order Amount + 420
+
+This formulation determines an optimal profit-maximizing decision boundary at 0.42 cutoff rather than an arbitrary 0.50 threshold.
+
+### 3. Bipartite Graph Syndicate Detection
+Sophisticated fraud rings bypass single-order rules by rotating SIM cards, virtual payment addresses, and delivery text strings across shared hardware devices. SentinelRisk builds an in-memory bipartite network mapping User Accounts, Device Fingerprints, UPI Virtual Payment Addresses, and Postal Codes.
+
+Running connected component clustering in O(V + E) linear time identifies multi-account rings with zero database network latency.
+
+### 4. Autonomous Dispute Defense Agent
+When cardholders dispute legitimate purchases, merchants often lose revenue due to slow manual evidence gathering. SentinelRisk correlates geofenced courier delivery telemetry, recipient signatures, and two-factor authentication traces into audit-compliant rebuttal dossiers adhering to Visa Compelling Evidence 3.0 (CE3.0) and card network standards.
+
+---
+
+## Measured Held-Out Benchmark Results
+
+Evaluated on a frozen held-out test split of 9,000 unseen transactions:
+
+| Metric | Measured Value | Operational Impact |
 | :--- | :--- | :--- |
-| Area Under ROC (ROC-AUC) | 0.7769 | Strong discrimination across varied order categories |
-| Area Under PR Curve (PR-AUC) | 0.6867 | Stable precision under severe class imbalance |
-| Precision (@ Cutoff theta = 0.42) | 76.01% | 3 out of 4 flagged orders are true losses |
-| Recall (@ Cutoff theta = 0.42) | 29.81% | High-confidence filtering of margin-destructive orders |
-| Average Inference Latency | 0.36 ms | Compatible with sub-20ms payment gateway budgets |
-| Net Profit Retained | INR 1,25,269.97 | Measured on 9,000 unseen test transactions |
+| Area Under ROC Curve (ROC-AUC) | 0.7769 | Reliable discrimination across diverse transaction types |
+| Area Under PR Curve (PR-AUC) | 0.6867 | Stable precision retention under severe class imbalance |
+| Model Precision (at 0.42 cutoff) | 76.01% | Over 3 out of 4 flagged orders are confirmed return losses |
+| Model Recall (at 0.42 cutoff) | 29.81% | High-confidence targeting of margin-destructive orders |
+| Average Inference Latency | 0.36 ms | Perfectly fits within sub-20ms payment gateway budgets |
+| Net Profit Retained | INR 1,25,269.97 | Measured financial margin saved on 9,000 test orders |
 
 ---
 
-## Integration and Usage
+## Integration Architecture
 
-### Option A: One-Line Client SDK
-Merchants can protect any custom checkout form by including the drop-in client SDK:
+### Method 1: Client-Side Drop-In SDK
+Merchants can protect any custom checkout form by including one line of JavaScript:
 ```html
 <script src="https://sentinel-risk-ai.vercel.app/sentinel.js"></script>
 ```
 
-### Option B: Real-Time REST API
+### Method 2: Synchronous REST Gateway API
 ```bash
 curl -X POST https://sentinel-risk-ai.vercel.app/api/v1/risk/score \
   -H "Content-Type: application/json" \
@@ -101,12 +99,12 @@ curl -X POST https://sentinel-risk-ai.vercel.app/api/v1/risk/score \
   }'
 ```
 
-### Option C: Asynchronous Event Streaming
-For high-volume transaction backbones handling 10,000+ events per second, SentinelRisk includes a native stream consumer (`backend/app/streaming/kafka_stream_consumer.py`) compatible with Apache Kafka and Amazon MSK.
+### Method 3: Asynchronous Event Streaming
+For enterprise transaction architectures processing 10,000+ orders per second, SentinelRisk includes an event consumer compatible with Apache Kafka and Amazon MSK located at backend/app/streaming/kafka_stream_consumer.py.
 
 ---
 
-## Project Structure
+## Repository Structure
 
 ```
 Sentinel-Risk-AI/
@@ -125,13 +123,12 @@ Sentinel-Risk-AI/
 │   ├── sentinel.js            # Client-side drop-in protection SDK
 │   └── sample_merchant_orders.csv
 ├── vercel.json                # Serverless deployment configuration
-├── BENCHMARK_REPORT.md        # Mathematical validation & cost curve report
-└── ENGINEERING_MASTERY_PLAYBOOK.md
+└── BENCHMARK_REPORT.md        # Detailed mathematical validation report
 ```
 
 ---
 
-## Local Development Quickstart
+## Local Development Setup
 
 1. Clone the repository and install dependencies:
 ```bash
@@ -140,9 +137,9 @@ cd Sentinel-Risk-AI
 pip install -r backend/requirements.txt
 ```
 
-2. Run the local backend server:
+2. Start the local server:
 ```bash
 uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-3. Open your browser at `http://127.0.0.1:8000` to interact with the live telemetry dashboard.
+3. Open http://127.0.0.1:8000 in your browser to view the real-time telemetry dashboard.

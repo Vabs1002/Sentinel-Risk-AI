@@ -1,77 +1,72 @@
-# SentinelRisk: Official Benchmark Evaluation & Margin Defense Report
-**Track 02: AI Risk Manager — Stopping Merchant Loss from COD Abuse, Fraud, and Chargebacks**
-
----
+# SentinelRisk: Benchmark Evaluation and Margin Defense Report
 
 ## Executive Summary
-In Indian e-commerce, Cash on Delivery (COD) Return-to-Origin (RTO) rates average **25–40%**, costing merchants billions in forward shipping, reverse logistics, and inventory lockup. Concurrently, friendly fraud chargebacks in UPI and card-absent transactions erode gross margins.
+In high-growth e-commerce, Cash on Delivery (COD) Return-to-Origin (RTO) rates average between 25 and 40 percent, costing online merchants substantial capital in forward shipping, reverse logistics, and locked inventory. Concurrently, card-absent friendly fraud chargebacks erode operating margins.
 
-**SentinelRisk** is a real-time, defense-only AI & ML risk mitigation engine designed to:
-1. Predict loss propensity in **< 1.0 ms** via forward-tree LightGBM inference.
-2. Identify syndicated multi-account collusive rings in **O(V + E)** time using in-memory bipartite graph clustering.
-3. Automate statutory dispute representment dossiers under **Visa Compelling Evidence 3.0 (CE3.0)** and **NPCI DMS** guidelines.
-4. Maximize **Net Economic Value (NEV)** by balancing loss avoided against false-positive customer friction.
+SentinelRisk is a real-time defense intelligence engine engineered to:
+1. Predict order loss propensity in 0.36 milliseconds via compiled decision tree traversal.
+2. Identify syndicated multi-account collusive rings in O(V + E) linear time using in-memory bipartite graph clustering.
+3. Automate statutory dispute representment dossiers under Visa Compelling Evidence 3.0 (CE3.0) and network dispute rules.
+4. Maximize Net Economic Value by balancing loss avoided against customer friction costs.
 
 ---
 
-## 1. Benchmark Dataset & Evaluation Methodology
+## 1. Benchmark Dataset and Evaluation Methodology
 
 ### Dataset Specifications
-- **Total Generated Samples**: 30,000 realistic Indian transaction records.
-- **Training Split**: 21,000 records (70%).
-- **Frozen Held-Out Test Set**: 9,000 records (30%).
-- **Base Loss Rate**: 36.81% (reflecting high-risk Tier-2/Tier-3 COD distribution and chargebacks).
-- **Features Captured (17 Vectors)**: Pincode Logistics Tier, Historical Area RTO Index, Order Value (INR), Settlement Mode (COD/UPI/Card), Checkout Dwell Velocity, Address Character Entropy, User Lifetime Orders & Return Rate, Device 24h Velocity, VPA Association Multiplicity, IP Threat Score, Carrier Legitimacy.
+Total Generated Samples: 30,000 realistic e-commerce transaction records.
+Training Split: 21,000 records (70 percent).
+Frozen Held-Out Test Set: 9,000 records (30 percent).
+Base Loss Rate: 36.81 percent.
+Features Captured: Pincode Logistics Tier, Historical Area RTO Index, Order Value (INR), Settlement Mode, Checkout Dwell Velocity, Address Character Entropy, User Lifetime Orders, Historical Return Rate, Device 24-Hour Velocity, VPA Association Multiplicity, IP Threat Score, Carrier Legitimacy.
 
 ---
 
 ## 2. Held-Out Test Set Performance Metrics
 
-Evaluated on the frozen **9,000 held-out test split**:
+Evaluated on the frozen 9,000 held-out test split:
 
 | Metric | Measured Value | Benchmark Significance |
 | :--- | :--- | :--- |
-| **Area Under ROC (ROC-AUC)** | **0.7769** | Strong discriminative ability across varying transaction types. |
-| **Area Under PR Curve (PR-AUC)** | **0.6867** | High precision retention under severe class imbalance. |
-| **Model Precision (@ Cutoff theta = 0.42)** | **76.01%** | 3 out of 4 flagged orders are true losses, minimizing false alarms. |
-| **Model Recall (@ Cutoff theta = 0.42)** | **29.81%** | Selects high-confidence threats for hard intervention. |
-| **Inference Latency (Serverless)** | **0.36 ms** | Suitable for sub-20ms real-time payment gateway pipelines. |
+| Area Under ROC (ROC-AUC) | 0.7769 | Strong discriminative ability across varying transaction types |
+| Area Under PR Curve (PR-AUC) | 0.6867 | High precision retention under severe class imbalance |
+| Model Precision (at 0.42 cutoff) | 76.01% | Over 3 out of 4 flagged orders are true confirmed losses |
+| Model Recall (at 0.42 cutoff) | 29.81% | High-confidence selection of margin-destructive orders |
+| Average Inference Latency | 0.36 ms | Meets sub-20ms real-time payment gateway latency budgets |
 
 ---
 
-## 3. False-Positive Cost & Economic Value Formulation
+## 3. False-Positive Cost and Economic Value Formulation
 
 ### The Financial Optimization Formula
-Standard accuracy metrics fail in risk management because misclassifying a good customer ($) destroys revenue and customer acquisition cost ($), whereas missing a fraud order ($) incurs logistics shipping loss.
+Standard accuracy metrics fail in commercial risk management because misclassifying a legitimate customer (False Positive) destroys gross merchandise margin and customer acquisition cost, whereas missing an abusive order (False Negative) incurs logistics shipping fees.
 
-\text{Net Economic Value (NEV)} = \sum_{i \in \text{TP}} \text{Loss Avoided}_i - \sum_{j \in \text{FP}} \text{False Positive Cost}_j
+Net Economic Value = Sum of Loss Avoided on True Positives - Sum of Friction Cost on False Positives
 
 Where:
-- $\text{Loss Avoided} = \text{Forward Shipping (INR 80)} + \text{Reverse Shipping (INR 70)} + 0.10 \times \text{Order Value}$
-- $\text{False Positive Cost} = \text{Gross Margin (28\%)} \times \text{Order Value} + CAC (\text{INR 420})$
+Loss Avoided = Forward Shipping (INR 80) + Reverse Shipping (INR 70) + 0.10 * Order Amount
+False Positive Cost = Gross Margin (28 percent) * Order Amount + Acquisition Cost (INR 420)
 
-### Cost Curve Analysis on 9,000 Test Orders:
-- **Baseline (No Risk System)**: Net Loss Exposure = **INR 33.12 Lakhs**.
-- **At Default Cutoff (theta = 0.42)**:
-  - Total Loss Avoided: **INR 3,42,180.00**
-  - False Positive Cost Incurred: **INR 2,28,450.00**
-  - **Net Profit Saved**: **INR 1,13,730.00**
-- **At Optimal Profit Cutoff (theta* = 0.541)**:
-  - **Maximum Net Economic Value**: **INR 1,25,269.97** directly retained for the merchant.
+### Financial Impact on 9,000 Held-Out Orders
+Baseline Loss Exposure without Risk Defense: INR 33.12 Lakhs
+Total Direct Loss Avoided at 0.42 Cutoff: INR 3,42,180.00
+False Positive Friction Cost Incurred: INR 2,28,450.00
+Net Margin Retained: INR 1,13,730.00
+Maximum Net Economic Value at Optimal Cutoff: INR 1,25,269.97
 
 ---
 
-## 4. Abuse-Ring Sentinel (Graph Topology)
+## 4. Abuse-Ring Sentinel Graph Topology
 
-- **Graph Architecture**: Multi-relational Bipartite Graph linking $\text{User} \longleftrightarrow \text{Device IMEI} \longleftrightarrow \text{UPI VPA} \longleftrightarrow \text{Pincode}$.
-- **Graph Scale**: **6,923 Nodes, 7,482 Edges**.
-- **Connected Components Clustered**: **14 Syndicates Detected**.
-- **Top Syndicate Exposure (SYN-4029)**: 7 accounts sharing 2 device fingerprints and 3 rotating VPAs with cumulative exposure of **INR 1,42,800.00**.
+Graph Architecture: Multi-relational Bipartite Graph linking User Accounts, Device Identifiers, Virtual Payment Addresses, and Postal Codes.
+Graph Scale: 6,923 Nodes, 7,482 Edges.
+Connected Components Clustered: 14 High-Exposure Syndicates Detected.
+Top Syndicate Exposure: 7 user accounts sharing 2 device fingerprints and 3 rotating payment addresses with cumulative exposure of INR 1,42,800.00.
 
 ---
 
 ## 5. Live Production Access
 
-- **Web Application**: [https://razorpay-sentinel-risk.vercel.app](https://razorpay-sentinel-risk.vercel.app)
-- **Health Endpoint**: [https://razorpay-sentinel-risk.vercel.app/api/v1/health](https://razorpay-sentinel-risk.vercel.app/api/v1/health)
-- **Scoring Endpoint**: [https://razorpay-sentinel-risk.vercel.app/api/v1/risk/score](https://razorpay-sentinel-risk.vercel.app/api/v1/risk/score)
+Web Application: https://sentinel-risk-ai.vercel.app
+Health Endpoint: https://sentinel-risk-ai.vercel.app/api/v1/health
+Scoring Endpoint: https://sentinel-risk-ai.vercel.app/api/v1/risk/score
