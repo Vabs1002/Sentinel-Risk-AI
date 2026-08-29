@@ -78,6 +78,20 @@ Evaluated on a frozen held-out test split of 9,000 transactions:
 
 ---
 
+## Technology Stack
+
+| Layer | Technology | Architectural Function |
+| :--- | :--- | :--- |
+| Core Scoring Engine | LightGBM, Custom Tree Evaluator | 0.36ms forward traversal of 160 decision trees |
+| Graph Analytics | NetworkX, Bipartite Graphs | O(V + E) connected component syndicate ring clustering |
+| API Layer | FastAPI, Uvicorn, ASGI | High-throughput asynchronous gateway endpoints |
+| Streaming Ingestion | Apache Kafka, Amazon MSK | Real-time decoupled transaction event processing |
+| Client SDK | JavaScript (ES6+) | Canvas/WebGL device fingerprinting & dwell telemetry |
+| Testing & CI/CD | Pytest, GitHub Actions | Automated multi-version matrix testing (Python 3.10 to 3.12) |
+| Cloud Infrastructure | Vercel Serverless, AWS Lambda | Zero-cold-start edge and serverless deployment |
+
+---
+
 ## Methodology, Dataset Calibration, and Operating Trade-offs
 
 ### Synthetic Data Generating Process
