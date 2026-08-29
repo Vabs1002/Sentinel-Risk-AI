@@ -18,7 +18,7 @@ Drop in SDK Script: https://sentinel-risk-ai.vercel.app/sentinel.js
  [ Synchronous Hot Path ]                                                 [ Asynchronous Stream ]
  • 160 Tree Pure Evaluator                                                • Apache Kafka / AWS MSK
  • 0.36ms Decision Latency                                                • Bipartite Graph Sentinel
- • Asymmetric Loss Policy                                                 • Visa CE3.0 Dispute Agent
+ • Asymmetric Loss Policy                                                 • Visa CE3.0 GenAI Agent
        │                                                                              │
        ▼                                                                              ▼
  [ Action: Allow / Step Up / Block ]                                      [ Live Telemetry Dashboard ]
@@ -47,15 +47,15 @@ SentinelRisk weights training loss dynamically:
 Cost of False Negative = 150 + 0.10 * Order Amount
 Cost of False Positive = 0.28 * Order Amount + 420
 
-This formulation determines an optimal profit maximizing decision boundary at 0.42 cutoff rather than an arbitrary 0.50 threshold.
+This formulation determines an optimal profit maximizing decision boundary rather than an arbitrary 0.50 threshold.
 
 ### 3. Bipartite Graph Syndicate Detection
 Sophisticated fraud rings bypass single order rules by rotating SIM cards, virtual payment addresses, and delivery text strings across shared hardware devices. SentinelRisk builds an in memory bipartite network mapping User Accounts, Device Fingerprints, UPI Virtual Payment Addresses, and Postal Codes.
 
 Running connected component clustering in O(V + E) linear time identifies multi account rings with zero database network latency.
 
-### 4. Autonomous Dispute Defense Agent
-When cardholders dispute legitimate purchases, merchants often lose revenue due to slow manual evidence gathering. SentinelRisk correlates geofenced courier delivery telemetry, recipient signatures, and two factor authentication traces into audit compliant rebuttal dossiers adhering to Visa Compelling Evidence 3.0 (CE3.0) and card network standards.
+### 4. GenAI Dispute Representment Agent (Visa CE3.0)
+When cardholders dispute legitimate purchases, merchants often lose revenue due to slow manual evidence gathering. SentinelRisk provides an autonomous agent with strict Pydantic schema enforcement that correlates geofenced courier delivery telemetry, recipient signatures, and two factor authentication traces into audit compliant rebuttal dossiers adhering to Visa Compelling Evidence 3.0 (CE3.0) and NPCI standards.
 
 ## Benchmark Evaluation Results
 
@@ -65,8 +65,8 @@ Evaluated on a frozen held out test split of 9,000 transactions:
 | :--- | :--- | :--- |
 | Area Under ROC Curve (ROC AUC) | 0.7769 | Reliable discrimination across diverse transaction types |
 | Area Under PR Curve (PR AUC) | 0.6867 | Stable precision retention under severe class imbalance |
-| Model Precision (at 0.42 cutoff) | 76.01% | Over 3 out of 4 flagged orders are confirmed return losses |
-| Model Recall (at 0.42 cutoff) | 29.81% | High confidence targeting of margin destructive orders |
+| Model Precision (at optimal cutoff) | 76.01% | Over 3 out of 4 flagged orders are confirmed return losses |
+| Model Recall (at optimal cutoff) | 29.81% | High confidence targeting of margin destructive orders |
 | Average Inference Latency | 0.36 ms | Perfectly fits within sub 20ms payment gateway budgets |
 | Net Profit Retained | INR 1,25,269.97 | Measured financial margin saved on 9,000 test orders |
 
@@ -75,9 +75,11 @@ Evaluated on a frozen held out test split of 9,000 transactions:
 | Layer | Technology | Architectural Function |
 | :--- | :--- | :--- |
 | Core Scoring Engine | LightGBM, Custom Tree Evaluator | 0.36ms forward traversal of 160 decision trees |
+| GenAI Dispute Agent | Pydantic v2, Structured LLM Schemas | Automated synthesis of Visa CE3.0 rebuttal dossiers |
 | Graph Analytics | NetworkX, Bipartite Graphs | O(V + E) connected component syndicate ring clustering |
 | API Layer | FastAPI, Uvicorn, ASGI | High throughput asynchronous gateway endpoints |
 | Streaming Ingestion | Apache Kafka, Amazon MSK | Real time decoupled transaction event processing |
+| Containerization | Docker, Docker Compose | Production multi stage container deployment |
 | Client SDK | JavaScript (ES6+) | Canvas/WebGL device fingerprinting and dwell telemetry |
 | Testing and CI/CD | Pytest, GitHub Actions | Automated multi version matrix testing (Python 3.10 to 3.12) |
 | Cloud Infrastructure | Vercel Serverless, AWS Lambda | Zero cold start edge and serverless deployment |
@@ -88,7 +90,7 @@ Evaluated on a frozen held out test split of 9,000 transactions:
 To ensure reproducible open source research without exposing confidential merchant PII or banking records, the benchmark uses a statistically calibrated Data Generating Process (DGP). The synthetic distribution mirrors empirical Indian e commerce metrics: 36.8 percent baseline loss incidence, Tier 1 through Tier 3 logistics return distributions, high velocity device collisions, and synthetic multi account rings.
 
 ### Understanding the Precision versus Recall Trade Off
-The default operating cutoff (0.42) is intentionally calibrated for high precision (76.01 percent). In real world commerce, hard blocking a legitimate high ticket customer is economically catastrophic due to lost customer lifetime value. 
+In real world commerce, hard blocking a legitimate high ticket customer is economically catastrophic due to lost customer lifetime value. 
 
 For merchants with lower margin sensitivity who prioritize raw loss prevention (higher recall), SentinelRisk supports dynamic tiered intervention:
 1. Low Risk (Score below 0.25): Frictionless approval.
@@ -140,8 +142,11 @@ Sentinel-Risk-AI/
 │   ├── sentinel.js            # Client side drop in protection SDK
 │   └── sample_merchant_orders.csv
 ├── scripts/
-│   └── benchmark_latency.py   # Standalone latency and throughput benchmark harness
+│   ├── benchmark_latency.py   # Standalone latency and throughput benchmark harness
+│   └── evaluate_cost_curve.py # Economic loss curve calibration utility
 ├── tests/                     # Comprehensive pytest unit and integration test suite
+├── Dockerfile                 # Multi stage production container definition
+├── docker-compose.yml         # Local microservice orchestration
 ├── vercel.json                # Serverless deployment configuration
 ├── LICENSE                    # MIT Open Source License
 └── BENCHMARK_REPORT.md        # Detailed mathematical validation report
@@ -166,9 +171,14 @@ pytest tests/ -v
 python scripts/benchmark_latency.py
 ```
 
-4. Start the local server:
+4. Run the economic threshold cost curve calibration:
+```bash
+python scripts/evaluate_cost_curve.py
+```
+
+5. Start the local server:
 ```bash
 uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-5. Open http://127.0.0.1:8000 in your browser to view the real time telemetry dashboard.
+6. Open http://127.0.0.1:8000 in your browser to view the real time telemetry dashboard.
