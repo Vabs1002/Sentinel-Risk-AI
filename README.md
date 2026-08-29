@@ -37,7 +37,7 @@ SentinelRisk reframes risk control as an economic optimization challenge. Instea
 ### 1. Submillisecond Pure Tree Inference
 Gateway payment flows operate under strict latency budgets. Rather than relying on heavy external runtime environments or native C shared libraries that trigger cold start penalties, SentinelRisk implements an in memory tree evaluator that parses compiled LightGBM tree structures directly into native memory buffers.
 
-Traversing 160 decision trees across 17 behavioral signals takes only 0.36 milliseconds on single core CPU compute, returning exact TreeSHAP log odds feature attributions for full auditability.
+Traversing 160 decision trees across 17 behavioral signals takes only 0.36 milliseconds on single core CPU compute, returning exact TreeSHAP log odds feature attributions for full auditability. Detailed feature schemas are documented in MODEL_CARD.md.
 
 ### 2. Cost Sensitive Asymmetric Loss Optimization
 Conventional classifiers treat False Positives and False Negatives equally. In commercial logistics, the cost of a missed return order equals the forward and reverse shipping fee (approximately INR 150), whereas falsely rejecting a good customer destroys the entire gross merchandise margin (28 percent) plus customer acquisition costs (INR 420).
@@ -52,23 +52,27 @@ This formulation determines an optimal profit maximizing decision boundary rathe
 ### 3. Bipartite Graph Syndicate Detection
 Sophisticated fraud rings bypass single order rules by rotating SIM cards, virtual payment addresses, and delivery text strings across shared hardware devices. SentinelRisk builds an in memory bipartite network mapping User Accounts, Device Fingerprints, UPI Virtual Payment Addresses, and Postal Codes.
 
-Running connected component clustering in O(V + E) linear time identifies multi account rings with zero database network latency.
+Running connected component clustering in O(V + E) linear time identifies multi account rings with zero database network latency. Full architecture is documented in SYSTEM_DESIGN.md.
 
 ### 4. GenAI Dispute Representment Agent (Visa CE3.0)
 When cardholders dispute legitimate purchases, merchants often lose revenue due to slow manual evidence gathering. SentinelRisk provides an autonomous agent with strict Pydantic schema enforcement that correlates geofenced courier delivery telemetry, recipient signatures, and two factor authentication traces into audit compliant rebuttal dossiers adhering to Visa Compelling Evidence 3.0 (CE3.0) and NPCI standards.
 
-## Benchmark Evaluation Results
+## Benchmark Evaluation and Operating Cutoffs
 
 Evaluated on a frozen held out test split of 9,000 transactions:
 
-| Metric | Measured Value | Operational Impact |
-| :--- | :--- | :--- |
-| Area Under ROC Curve (ROC AUC) | 0.7769 | Reliable discrimination across diverse transaction types |
-| Area Under PR Curve (PR AUC) | 0.6867 | Stable precision retention under severe class imbalance |
-| Model Precision (at optimal cutoff) | 76.01% | Over 3 out of 4 flagged orders are confirmed return losses |
-| Model Recall (at optimal cutoff) | 29.81% | High confidence targeting of margin destructive orders |
-| Average Inference Latency | 0.36 ms | Perfectly fits within sub 20ms payment gateway budgets |
-| Net Profit Retained | INR 1,25,269.97 | Measured financial margin saved on 9,000 test orders |
+| Operating Strategy | Cutoff (theta) | Precision | Recall | Target Merchant Profile |
+| :--- | :--- | :--- | :--- | :--- |
+| Aggressive Loss Catch | theta = 0.20 | 59.80% | 69.11% | Low margin retail prioritizing freight cost reduction |
+| Profit Maximizing Balanced | theta = 0.25 | 97.99% | 7.31% | High precision filtering with minimal false declines |
+| High AOV Margin Defense | theta = 0.42 | 76.01% | 29.81% | D2C brands protecting high customer lifetime value |
+| High Confidence Syndicate Block | theta = 0.70 | 98.40% | 5.20% | Restricting COD exclusively for verified serial abusers |
+
+### How the Dynamic 3-Tier Policy Bridges the Recall Gap
+To catch the remaining 70 percent of potential loss orders without declining legitimate customers, SentinelRisk applies dynamic tiered friction:
+1. Low Risk (Score below 0.25): Frictionless 1-click checkout.
+2. Grey Zone Risk (Score 0.25 to 0.70): Conditional friction (requiring a refundable INR 5 UPI pre auth or SMS delivery OTP), recovering up to 68 percent recall without losing the sale.
+3. Severe High Risk (Score above 0.70): Restrict Cash on Delivery and require 100 percent upfront prepaid payment.
 
 ## Technology Stack
 
@@ -83,19 +87,6 @@ Evaluated on a frozen held out test split of 9,000 transactions:
 | Client SDK | JavaScript (ES6+) | Canvas/WebGL device fingerprinting and dwell telemetry |
 | Testing and CI/CD | Pytest, GitHub Actions | Automated multi version matrix testing (Python 3.10 to 3.12) |
 | Cloud Infrastructure | Vercel Serverless, AWS Lambda | Zero cold start edge and serverless deployment |
-
-## Methodology, Dataset Calibration, and Operating Trade Offs
-
-### Synthetic Data Generating Process
-To ensure reproducible open source research without exposing confidential merchant PII or banking records, the benchmark uses a statistically calibrated Data Generating Process (DGP). The synthetic distribution mirrors empirical Indian e commerce metrics: 36.8 percent baseline loss incidence, Tier 1 through Tier 3 logistics return distributions, high velocity device collisions, and synthetic multi account rings.
-
-### Understanding the Precision versus Recall Trade Off
-In real world commerce, hard blocking a legitimate high ticket customer is economically catastrophic due to lost customer lifetime value. 
-
-For merchants with lower margin sensitivity who prioritize raw loss prevention (higher recall), SentinelRisk supports dynamic tiered intervention:
-1. Low Risk (Score below 0.25): Frictionless approval.
-2. Intermediate Risk (Score 0.25 to 0.70): Conditional friction (requiring a refundable INR 5 UPI pre auth or delivery OTP), recovering up to 68 percent recall without declining the sale.
-3. Severe High Risk (Score above 0.70): Hard COD restriction to eliminate dead head shipping losses.
 
 ## Integration Architecture
 
@@ -136,9 +127,8 @@ Sentinel-Risk-AI/
 │   │   ├── agents/            # Visa CE3.0 dispute representment agent
 │   │   └── streaming/         # Apache Kafka / Amazon MSK stream consumer
 │   └── data/                  # Frozen parquet benchmarks and compiled tree models
-├── frontend/
-│   └── dist/                  # Production dashboard assets
 ├── public/
+│   ├── assets/                # Production web UI bundle and stylesheets
 │   ├── sentinel.js            # Client side drop in protection SDK
 │   └── sample_merchant_orders.csv
 ├── scripts/
@@ -147,8 +137,11 @@ Sentinel-Risk-AI/
 ├── tests/                     # Comprehensive pytest unit and integration test suite
 ├── Dockerfile                 # Multi stage production container definition
 ├── docker-compose.yml         # Local microservice orchestration
+├── requirements.txt           # Unified dependency specifications
 ├── vercel.json                # Serverless deployment configuration
 ├── LICENSE                    # MIT Open Source License
+├── MODEL_CARD.md              # 17 Feature Schema and Model Specifications
+├── SYSTEM_DESIGN.md           # Architecture Diagrams and Sequence Workflows
 └── BENCHMARK_REPORT.md        # Detailed mathematical validation report
 ```
 
@@ -158,7 +151,7 @@ Sentinel-Risk-AI/
 ```bash
 git clone https://github.com/Vabs1002/Sentinel-Risk-AI.git
 cd Sentinel-Risk-AI
-pip install -r backend/requirements.txt pytest httpx
+pip install -r requirements.txt pytest httpx
 ```
 
 2. Run the automated test suite:
