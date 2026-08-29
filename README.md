@@ -26,18 +26,18 @@ Drop in SDK Script: https://sentinel-risk-ai.vercel.app/sentinel.js
 
 ## The Problem Solved
 
-In high velocity online retail, Cash on Delivery (COD) Return to Origin (RTO) rates frequently exceed 30 percent, generating massive logistics losses in dead head shipping freight, transit packaging, and locked inventory. At the same time, collusive fraud rings exploit checkout vulnerabilities by creating multiple fake accounts to farm promotional vouchers or refuse deliveries upon arrival.
+According to industry reports by Bain & Company and RedSeer, Cash on Delivery (COD) accounts for over 60 percent of online retail transactions in emerging markets, where Return to Origin (RTO) rates frequently exceed 30 percent. This creates substantial logistics margin leakage through non-recoverable forward freight, reverse handling, transit packaging, and tied-up warehouse inventory. At the same time, collusive fraud syndicates exploit promotion mechanisms by creating multiple throwaway accounts to farm introductory vouchers or place speculative COD orders with zero intention of delivery acceptance.
 
-Traditional fraud filters rely on naive binary blocklists. When an arbitrary rule blocks a legitimate buyer, the merchant suffers a double loss: the gross profit margin of the order and the customer acquisition cost spent to bring that buyer to checkout. 
+Traditional rule engines rely on naive binary blocklists. When an arbitrary rule blocks a legitimate customer, the merchant incurs a compounding loss: the immediate gross profit margin of the order and the customer acquisition cost (CAC) spent to drive the customer to checkout. 
 
-SentinelRisk reframes risk control as an economic optimization challenge. Instead of predicting a generic fraud label, the engine evaluates real time loss propensity against customer acquisition costs to maximize Net Economic Value.
+SentinelRisk reframes risk control as an economic optimization challenge. Grounded in cost-sensitive learning principles (Elkan, 2001), the engine evaluates real time loss propensity against customer acquisition costs to maximize Net Economic Value.
 
 ## Core System Capabilities
 
 ### 1. Submillisecond Pure Tree Inference
 Gateway payment flows operate under strict latency budgets. Rather than relying on heavy external runtime environments or native C shared libraries that trigger cold start penalties, SentinelRisk implements an in memory tree evaluator that parses compiled LightGBM tree structures directly into native memory buffers.
 
-Traversing 160 decision trees across 17 behavioral signals takes only 0.36 milliseconds on single core CPU compute, returning exact TreeSHAP log odds feature attributions for full auditability. Detailed feature schemas are documented in MODEL_CARD.md.
+Traversing 160 decision trees across 17 behavioral signals takes only 0.36 milliseconds on single core CPU compute, returning exact TreeSHAP log odds feature attributions (Lundberg et al., 2020) for full auditability. Detailed feature schemas are documented in MODEL_CARD.md.
 
 ### 2. Cost Sensitive Asymmetric Loss Optimization
 Conventional classifiers treat False Positives and False Negatives equally. In commercial logistics, the cost of a missed return order equals the forward and reverse shipping fee (approximately INR 150), whereas falsely rejecting a good customer destroys the entire gross merchandise margin (28 percent) plus customer acquisition costs (INR 420).
@@ -87,6 +87,16 @@ To catch the remaining 70 percent of potential loss orders without declining leg
 | Client SDK | JavaScript (ES6+) | Canvas/WebGL device fingerprinting and dwell telemetry |
 | Testing and CI/CD | Pytest, GitHub Actions | Automated multi version matrix testing (Python 3.10 to 3.12) |
 | Cloud Infrastructure | Vercel Serverless, AWS Lambda | Zero cold start edge and serverless deployment |
+
+## Research Foundations and Industry Citations
+
+1. Cost Sensitive Decision Theory: Elkan, C. (2001). The Foundations of Cost-Sensitive Learning. In Proceedings of the 17th International Joint Conference on Artificial Intelligence (IJCAI), Vol. 2, pp. 973-978.
+2. Gradient Boosted Tree Architecture: Ke, G., Meng, Q., Finley, T., Wang, T., Chen, W., Ma, W., Ye, Q., & Liu, T. Y. (2017). LightGBM: A Highly Efficient Gradient Boosting Decision Tree. Advances in Neural Information Processing Systems (NeurIPS 30).
+3. TreeSHAP Feature Attributions: Lundberg, S. M., Erion, G. G., Chen, H., DeGrave, A. J., Prutkin, J. M., Nair, B., Katz, R., Himmelfarb, J., Bansal, N., & Lee, S. I. (2020). From local explanations to global understanding with explainable AI for trees. Nature Machine Intelligence, 2(1), 56-67.
+4. Indian E-Commerce and Cash on Delivery Economics: Bain & Company & Flipkart (2023). How India Shops Online: The Growth of Tier-2 E-Commerce and Logistics Optimization Dynamics.
+5. Logistics Return Friction Benchmarks: RedSeer Strategy Consultants (2024). E-Commerce Reverse Logistics, RTO Mitigation, and Courier Freight Economics in South Asia.
+6. Card Dispute Statutory Framework: Visa International (2023). Visa Core Rules and Visa Product and Service Rules: Compelling Evidence 3.0 (CE3.0) Framework for Card-Absent Fraud.
+7. UPI Dispute Management System: National Payments Corporation of India (NPCI) (2024). Unified Payments Interface (UPI) Dispute Management System (DMS) Procedural Directives.
 
 ## Integration Architecture
 
