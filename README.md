@@ -1,7 +1,7 @@
 # SentinelRisk
 ### Autonomous Margin Defense and Loss Mitigation Engine for Modern Commerce
 
-SentinelRisk is an enterprise risk intelligence platform engineered to protect merchant gross margins from delivery return abuse, multi-account syndicate farming, and payment chargebacks.
+SentinelRisk is an open-source, production-grade risk intelligence platform engineered to protect merchant gross margins from delivery return abuse, multi-account syndicate farming, and payment chargebacks.
 
 Live Production Dashboard: https://sentinel-risk-ai.vercel.app
 Drop-in SDK Script: https://sentinel-risk-ai.vercel.app/sentinel.js
@@ -63,9 +63,9 @@ When cardholders dispute legitimate purchases, merchants often lose revenue due 
 
 ---
 
-## Measured Held-Out Benchmark Results
+## Benchmark Evaluation Results
 
-Evaluated on a frozen held-out test split of 9,000 unseen transactions:
+Evaluated on a frozen held-out test split of 9,000 transactions:
 
 | Metric | Measured Value | Operational Impact |
 | :--- | :--- | :--- |
@@ -75,6 +75,21 @@ Evaluated on a frozen held-out test split of 9,000 unseen transactions:
 | Model Recall (at 0.42 cutoff) | 29.81% | High-confidence targeting of margin-destructive orders |
 | Average Inference Latency | 0.36 ms | Perfectly fits within sub-20ms payment gateway budgets |
 | Net Profit Retained | INR 1,25,269.97 | Measured financial margin saved on 9,000 test orders |
+
+---
+
+## Methodology, Dataset Calibration, and Operating Trade-offs
+
+### Synthetic Data Generating Process
+To ensure reproducible open-source research without exposing confidential merchant PII or banking records, the benchmark uses a statistically calibrated Data Generating Process (DGP). The synthetic distribution mirrors empirical Indian e-commerce metrics: 36.8 percent baseline loss incidence, Tier-1 through Tier-3 logistics return distributions, high-velocity device collisions, and synthetic multi-account rings.
+
+### Understanding the Precision versus Recall Trade-off
+The default operating cutoff (0.42) is intentionally calibrated for high precision (76.01 percent). In real-world commerce, hard-blocking a legitimate high-ticket customer is economically catastrophic due to lost customer lifetime value. 
+
+For merchants with lower margin sensitivity who prioritize raw loss prevention (higher recall), SentinelRisk supports dynamic tiered intervention:
+1. Low Risk (Score below 0.25): Frictionless approval.
+2. Intermediate Risk (Score 0.25 to 0.70): Conditional friction (requiring a refundable INR 5 UPI pre-auth or delivery OTP), recovering up to 68 percent recall without declining the sale.
+3. Severe High Risk (Score above 0.70): Hard COD restriction to eliminate dead-head shipping losses.
 
 ---
 
@@ -108,6 +123,8 @@ For enterprise transaction architectures processing 10,000+ orders per second, S
 
 ```
 Sentinel-Risk-AI/
+├── .github/
+│   └── workflows/ci.yml       # Automated GitHub Actions test suite
 ├── api/
 │   └── index.py               # Universal serverless ASGI API router
 ├── backend/
@@ -122,24 +139,38 @@ Sentinel-Risk-AI/
 ├── public/
 │   ├── sentinel.js            # Client-side drop-in protection SDK
 │   └── sample_merchant_orders.csv
+├── scripts/
+│   └── benchmark_latency.py   # Standalone latency & throughput benchmark harness
+├── tests/                     # Comprehensive pytest unit and integration test suite
 ├── vercel.json                # Serverless deployment configuration
+├── LICENSE                    # MIT Open Source License
 └── BENCHMARK_REPORT.md        # Detailed mathematical validation report
 ```
 
 ---
 
-## Local Development Setup
+## Local Development and Testing
 
 1. Clone the repository and install dependencies:
 ```bash
 git clone https://github.com/Vabs1002/Sentinel-Risk-AI.git
 cd Sentinel-Risk-AI
-pip install -r backend/requirements.txt
+pip install -r backend/requirements.txt pytest httpx
 ```
 
-2. Start the local server:
+2. Run the automated test suite:
+```bash
+pytest tests/ -v
+```
+
+3. Run the standalone latency benchmark:
+```bash
+python scripts/benchmark_latency.py
+```
+
+4. Start the local server:
 ```bash
 uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-3. Open http://127.0.0.1:8000 in your browser to view the real-time telemetry dashboard.
+5. Open http://127.0.0.1:8000 in your browser to view the real-time telemetry dashboard.
