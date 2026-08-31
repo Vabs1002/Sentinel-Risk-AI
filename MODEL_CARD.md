@@ -1,62 +1,113 @@
-# SentinelRisk Model Card: 160-Tree Cost Sensitive Loss Engine
+# SentinelRisk Model Card: 160-Tree Cost-Sensitive Loss Engine
 
 ## Model Details
-Model Name: SentinelRisk Pure Tree Evaluator v1.2
-Model Architecture: 160 Gradient Boosted Decision Trees (LightGBM)
-Inference Engine: Zero Dependency In Memory Tree Traversal (Single Core CPU)
-Inference Latency: 0.179 ms (P50), 0.516 ms (P99)
-Model Parameters: Max Depth 6, Learning Rate 0.05, Shrinkage 1.0, Total Trees 160
-Input Dimension: 17 Behavioral and Telemetry Features
-Output: Loss Propensity Probability in range [0.001, 0.999]
 
-## Data Schema: 17 Behavioral Signals
+| Property | Value |
+| :--- | :--- |
+| Model Name | SentinelRisk Pure Tree Evaluator v2.0 |
+| Architecture | 160 Gradient Boosted Decision Trees (LightGBM) |
+| Inference Engine | Zero-dependency in-memory tree traversal |
+| Inference Latency | P50: 0.179ms, P99: 0.516ms (single core) |
+| Throughput | 4,680 QPS on single core CPU |
+| Model Parameters | Max Depth 6, LR 0.05, 160 trees |
+| Input Dimension | 17 behavioral and telemetry features |
+| Output | Loss propensity probability in [0.001, 0.999] |
+| Explainability | Perturbation-based feature importance per request |
 
-| Index | Feature Name | Data Type | Value Range | Description and Mathematical Formulation |
+---
+
+## Training Data Disclosure
+
+**This model was trained on synthetically generated data.**
+
+The training corpus of 30,000 transactions was produced by `backend/app/ml/dataset_generator.py`
+using a log-odds formula that encodes known Indian e-commerce fraud patterns:
+high-RTO pincodes, COD payment mode, device velocity spikes, and low-entropy addresses.
+
+**What this means for production use:**
+
+The model correctly learns the directional relationships between features and risk — high
+device velocity increases score, prepaid payment decreases score, Tier 3 pincodes increase
+score. These relationships are real. The precise decision boundaries and feature weights,
+however, are calibrated to the synthetic distribution, not a real merchant's transaction mix.
+
+**What a production deployment would need:**
+
+6 to 12 months of real merchant transaction history with Return-to-Origin labels from a
+logistics partner (Delhivery, Shiprocket, or Ecom Express). Retrain using
+`backend/app/ml/cost_sensitive_trainer.py` with `margin_pct` and `cac_inr` set to the
+merchant's actual cost structure. The architecture, training objective, and inference
+engine are all production-ready. Only the training data needs to be swapped.
+
+---
+
+## Feature Schema: 17 Behavioral Signals
+
+| Index | Feature | Type | Range | Description |
 | :--- | :--- | :--- | :--- | :--- |
-| 0 | pincode_tier | Integer | 1, 2, 3 | Logistics infrastructure tier (1 = Metro, 2 = Tier 2 City, 3 = Rural/Remote) |
-| 1 | pincode_historical_rto | Float | 0.05 to 0.65 | Historical return to origin rate of destination postal delivery zone |
-| 2 | order_amount | Float | 299 to 25000 | Gross transaction value in Indian Rupees (INR) |
-| 3 | payment_mode | Integer | 0, 1 | Payment channel (0 = Cash on Delivery, 1 = Prepaid UPI/Card) |
-| 4 | is_cod | Integer | 0, 1 | Binary indicator for Cash on Delivery settlement |
-| 5 | checkout_dwell_seconds | Float | 1.5 to 180.0 | Elapsed seconds from cart view to order submission |
-| 6 | address_entropy | Float | 0.15 to 0.98 | Normalized Shannon entropy of recipient address string |
-| 7 | user_order_count | Integer | 0 to 50 | Total lifetime orders completed by user identifier |
-| 8 | user_historical_rto | Float | 0.00 to 0.95 | Past delivery return ratio of customer account |
-| 9 | device_order_count_24h | Integer | 1 to 20 | Order submissions linked to physical device fingerprint in 24 hours |
-| 10 | device_unique_vpa_count | Integer | 1 to 10 | Count of distinct UPI handles associated with hardware device |
-| 11 | hour_of_day | Integer | 0 to 23 | Transaction submission timestamp in Indian Standard Time (IST) |
-| 12 | distance_km | Float | 2.0 to 1500.0 | Estimated dispatch distance from fulfillment hub to destination |
-| 13 | category_risk | Float | 0.05 to 0.85 | Base category return propensity (Fashion: 0.38, Electronics: 0.15) |
-| 14 | ip_reputation_risk | Float | 0.01 to 0.95 | Anonymity proxy or VPN threat score from ASN registry |
-| 15 | phone_carrier_risk | Float | 0.02 to 0.90 | Carrier legitimacy index (VoIP vs physical SIM binding) |
-| 16 | cart_item_count | Integer | 1 to 15 | Total units included in checkout basket |
+| 0 | `pincode_tier` | int | 1, 2, 3 | Logistics infrastructure tier — 1=Metro, 2=Tier 2, 3=Rural |
+| 1 | `pincode_historical_rto` | float | 0.05–0.65 | Historical return rate of destination postal zone |
+| 2 | `order_amount` | float | 299–25000 | Gross transaction value in INR |
+| 3 | `payment_mode` | int | 0–3 | 0=COD, 1=UPI, 2=Card, 3=NetBanking |
+| 4 | `is_cod` | int | 0, 1 | Cash on Delivery binary flag |
+| 5 | `checkout_dwell_seconds` | float | 1.5–180 | Elapsed seconds from cart view to submission |
+| 6 | `address_entropy` | float | 0.15–0.98 | Normalized Shannon entropy of delivery address |
+| 7 | `user_order_count` | int | 0–50 | Lifetime completed orders by customer |
+| 8 | `user_historical_rto` | float | 0.00–0.95 | Customer's personal return ratio |
+| 9 | `device_order_count_24h` | int | 1–20 | Server-tracked orders from this device in 24h |
+| 10 | `device_unique_vpa_count` | int | 1–10 | Distinct UPI handles bound to this device |
+| 11 | `hour_of_day` | int | 0–23 | Transaction hour in IST |
+| 12 | `distance_km` | float | 2–1500 | Billing pincode to shipping pincode distance |
+| 13 | `category_risk` | float | 0.05–0.85 | Product category base return propensity |
+| 14 | `ip_reputation_risk` | float | 0.01–0.95 | Proxy / VPN / ASN threat score |
+| 15 | `phone_carrier_risk` | float | 0.02–0.90 | VoIP vs physical SIM carrier legitimacy |
+| 16 | `cart_item_count` | int | 1–15 | Units in checkout basket |
 
-## Feature Importance and TreeSHAP Ranking
+> **Note on `device_order_count_24h`:** This feature is tracked server-side in a rolling 24-hour
+> window. The client SDK value is overridden by the server's own counter on each request.
+> In production this counter moves to Redis: `INCR device:{hash} EX 86400`.
 
-| Feature Name | TreeSHAP Absolute Importance | Directional Impact on Risk |
+---
+
+## Feature Importance (Perturbation-Based)
+
+Importance is computed by measuring the drop in risk score when each feature is individually
+replaced with its low-risk baseline value. This is an honest, model-agnostic method
+that requires no post-hoc approximation library.
+
+| Rank | Feature | Directional Impact |
 | :--- | :--- | :--- |
-| device_order_count_24h | 0.428 | High velocity strongly increases fraud and return risk |
-| pincode_historical_rto | 0.382 | High historical area returns elevate loss probability |
-| is_cod | 0.341 | Cash on Delivery carries 3.2x higher return propensity |
-| address_entropy | 0.287 | Low character entropy (e.g. "asdfgh") indicates fake address |
-| device_unique_vpa_count | 0.264 | Multiple VPAs on one device indicate voucher farming rings |
-| order_amount | 0.198 | High ticket COD orders carry elevated delivery refusal risk |
-| checkout_dwell_seconds | 0.174 | Sub 5 second checkout dwell signals automated bot script |
+| 1 | `device_order_count_24h` | High velocity strongly elevates fraud and RTO risk |
+| 2 | `pincode_historical_rto` | High area return rate is the strongest geographic signal |
+| 3 | `is_cod` | COD orders carry 3.2x higher return propensity than prepaid |
+| 4 | `address_entropy` | Low entropy (e.g., "asdfgh") indicates a fabricated delivery address |
+| 5 | `device_unique_vpa_count` | Multiple UPI IDs on one device is a voucher farming signal |
+| 6 | `order_amount` | High-ticket COD has elevated delivery refusal risk |
+| 7 | `checkout_dwell_seconds` | Sub-5-second checkout signals automated bot placement |
 
-## Comprehensive Operating Points: Precision versus Recall Trade Off
+---
 
-The default operating threshold is tunable depending on the merchant business model and gross margin structure:
+## Operating Points
 
-| Operating Mode | Threshold (theta) | Precision | Recall | Target Merchant Profile and Strategy |
+| Strategy | θ | Precision | Recall | Use When |
 | :--- | :--- | :--- | :--- | :--- |
-| High Recall / Max Prevention | theta = 0.20 | 59.80% | 69.11% | Low margin retail where saving shipping freight is priority |
-| Balanced Profit Optimization | theta = 0.25 | 97.99% | 7.31% | High precision filtering with zero false declines |
-| High AOV / Margin Defense | theta = 0.42 | 76.01% | 29.81% | D2C brands where false declines destroy customer lifetime value |
-| High Confidence Terminal Block | theta = 0.70 | 98.40% | 5.20% | Restricting COD exclusively for verified collusive syndicates |
+| Aggressive Loss Catch | 0.20 | 59.8% | 69.1% | Low-margin retail, freight cost is priority |
+| Profit Maximizing | 0.25 | 98.0% | 7.3% | High precision, minimize false declines |
+| Margin Defense | 0.42 | 76.0% | 29.8% | D2C brands, protect customer LTV |
+| Syndicate Block Only | 0.70 | 98.4% | 5.2% | Only restrict verified serial abusers |
 
-## Bridging the Recall Gap: Dynamic 3-Tier Policy Flow
+Calibrate your operating threshold using `scripts/evaluate_cost_curve.py` —
+it scans the full grid and prints the economically optimal cutoff for your
+specific `margin_pct` and `cac_inr` cost structure.
 
-To prevent losing the remaining 70 percent of potential loss orders without alienating legitimate buyers, SentinelRisk uses dynamic friction:
-1. Low Risk (Score below 0.25): Frictionless 1-click checkout.
-2. Grey Zone Risk (Score 0.25 to 0.70): Conditional friction (requiring a refundable INR 5 UPI verification or SMS delivery OTP confirmation). This intercepts 68+ percent of loss orders without rejecting the sale.
-3. Severe High Risk (Score above 0.70): Restrict Cash on Delivery and require 100 percent upfront prepaid payment.
+---
+
+## 3-Tier Decision Policy
+
+Score below 0.25 — Frictionless checkout. No interruption to the customer journey.
+
+Score 0.25 to 0.70 — Conditional step-up. Require either an INR 5 refundable UPI
+pre-authorization hold or an SMS delivery OTP confirmation. Recovers up to 68%
+additional recall without rejecting the sale.
+
+Score above 0.70 — Restrict Cash on Delivery. Surface prepaid UPI and card options only.

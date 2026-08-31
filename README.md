@@ -145,7 +145,7 @@ Score above 0.70 — Restrict COD entirely. Require 100% upfront prepaid settlem
 | API Layer | FastAPI, Uvicorn, ASGI | Async REST endpoints with full Pydantic request validation |
 | Streaming | Apache Kafka / Amazon MSK | Decoupled async transaction event worker at 4,600+ QPS |
 | Client SDK | JavaScript ES6+, Canvas, WebGL | Device fingerprinting and behavioral signals at checkout |
-| Testing and CI | Pytest, HTTPX, GitHub Actions | 12 automated tests across Python 3.10, 3.11, and 3.12 matrix |
+| Testing and CI | Pytest, HTTPX, GitHub Actions | 14 automated tests across Python 3.10, 3.11, and 3.12 matrix |
 | Deployment | Vercel Serverless | Zero cold-start production deployment at sentinel-risk-ai.vercel.app |
 
 ---
@@ -247,10 +247,11 @@ Sentinel-Risk-AI/
 │   ├── benchmark_latency.py       Measures P50/P99 latency over 10,000 trials
 │   ├── evaluate_cost_curve.py     Scans threshold grid to find profit-maximizing cutoff
 │   └── map_your_data.py           Interactive mapper from any merchant CSV to SentinelRisk schema
-├── tests/                         12 pytest unit and integration tests
+├── tests/                         14 pytest unit and integration tests
 ├── requirements.txt
 ├── vercel.json
 ├── LICENSE
+├── RAZORPAY_INTEGRATION.md        Razorpay-specific checkout integration blueprint
 ├── MODEL_CARD.md                  17-feature schema, training details, operating tradeoffs
 ├── SYSTEM_DESIGN.md               Architecture diagrams and sequence flows
 └── BENCHMARK_REPORT.md            Full mathematical evaluation on 9,000 held-out transactions
@@ -274,7 +275,7 @@ pip install -r requirements.txt pytest httpx
 pytest tests/ -v
 ```
 
-Expected output: 12 passed in under 10 seconds.
+Expected output: 14 passed in under 10 seconds.
 
 **Step 3: Run the latency benchmark**
 
