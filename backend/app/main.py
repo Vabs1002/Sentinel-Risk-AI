@@ -79,7 +79,7 @@ async def get_syndicates():
 
 @app.post("/api/v1/disputes/generate")
 async def generate_dispute_dossier(req: DisputeGenerationRequest):
-    return dispute_agent.generate_rebuttal_dossier(req.model_dump())
+    return dispute_agent.run(req.model_dump())
 
 @app.post("/api/v1/risk/upload-csv")
 async def upload_csv_and_evaluate(file: UploadFile = File(...)):

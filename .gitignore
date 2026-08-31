@@ -39,3 +39,6 @@ Thumbs.db
 .gemini
 
 *.pdf
+
+# Private reviewer feedback
+*.pdf
