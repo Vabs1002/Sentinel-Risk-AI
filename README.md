@@ -9,23 +9,49 @@
 
 Most fraud filters are binary blocklists — block the suspicious user or let them through. That approach destroys more merchant value than the fraud itself, because every false decline burns the gross margin of a legitimate sale plus the entire customer acquisition cost spent to get that person to checkout.
 
-SentinelRisk was built on one insight: **risk control is an economic optimization problem, not a classification accuracy problem.** The model does not minimize prediction error. It minimizes financial loss. Every decision is calibrated to a merchant's real cost structure — forward freight versus margin versus customer lifetime value — processed by a custom in-memory tree engine in under 0.20 milliseconds, supported by an in-memory bipartite graph detecting multi-account fraud rings in O(V+E) time, and backed by an **Agentic RAG loop** that retrieves Visa CE3.0 and NPCI rulebook knowledge to automatically generate audit-ready dispute dossiers.
+SentinelRisk was built on one core insight: **risk control is an economic optimization problem, not a classification accuracy problem.** The model does not minimize prediction error. It minimizes net financial loss. Every decision is calibrated to a merchant's real cost structure — forward freight versus margin versus customer lifetime value — processed by a custom in-memory tree engine in under 0.20 milliseconds, supported by an in-memory bipartite graph detecting multi-account fraud rings in O(V+E) time, and backed by an **Agentic RAG loop** that retrieves Visa CE3.0 and NPCI rulebook knowledge to automatically generate audit-ready dispute dossiers.
 
 This combination — cost-sensitive gradient boosting, submillisecond pure-Python inference, graph-based syndicate detection, and Agentic RAG dispute resolution — runs entirely serverlessly on Vercel with zero external ML runtime dependencies.
 
 ---
 
-## Why This Matters for Payment Ecosystems
+## The Real-World Business Problem (The Why)
 
-Indian e-commerce processes over 900 million COD orders annually. Return-to-origin rates in Tier 2 and Tier 3 cities routinely exceed 35 percent. For every order that gets falsely blocked by a naive rule engine:
+Over 60% of online retail orders in India rely on Cash on Delivery (COD). This creates four critical financial challenges that traditional fraud tools fail to solve:
 
-1. The merchant loses the entire gross margin of the sale (typically 25 to 30 percent of order value)
-2. The CAC paid to acquire that customer (INR 350 to 500 for D2C brands) is permanently destroyed
-3. The customer's lifetime value is wiped out by one bad checkout experience
+1. **The Ghost Order Problem (RTO — Return to Origin):**
+   A customer orders an INR 3,000 item on COD. The merchant pays a courier INR 80 for forward shipping. When the delivery driver arrives, the customer refuses delivery or is unreachable. The courier returns the package and charges INR 70 for reverse shipping. The merchant loses INR 150 in pure freight fees while inventory sits locked in transit for 10 days.
 
-And for every legitimate chargeback that goes uncontested — because assembling geofenced delivery proof manually takes days — the merchant absorbs the full disputed amount.
+2. **The False Decline Trap (Why Binary Blocklists Bankrupt Merchants):**
+   To prevent RTO losses, traditional tools apply blunt filters (e.g. blocking all new users or specific postal codes). When a genuine buyer is blocked on an INR 3,000 order, the merchant loses both the 28% gross merchandise margin (INR 840) and the customer acquisition spend (INR 420 CAC) — losing INR 1,260 total. Falsely blocking a good buyer is over 8 times more expensive than shipping a single failed return.
 
-SentinelRisk solves both problems in the same pipeline.
+3. **Collusive Fraud Syndicates (Multi-Account Abuse):**
+   Organized fraud rings rotate virtual payment addresses (VPAs), SIM cards, and delivery names across shared mobile hardware to repeatedly exploit welcome promotions or place bad-faith COD orders. Single-order filters evaluate each order in isolation and miss the coordinated pattern.
+
+4. **Uncontested Chargebacks (Friendly Fraud):**
+   When cardholders dispute legitimate purchases, merchants have 30 days to compile geofenced delivery receipts, IP logs, and two-factor authentication traces under Visa Compelling Evidence 3.0 (CE3.0) and NPCI rules. Small merchants lack the operational bandwidth to assemble this paperwork, losing 100% of disputed revenue by default.
+
+---
+
+## Why SentinelRisk is in the Top 1% of Architectures
+
+1. **Economic Asymmetric Loss Model (Elkan 2001):**
+   Instead of optimizing for generic accuracy, SentinelRisk trains with instance-dependent loss weights derived from merchant unit economics: `Cost_FN = 150 + 0.10 * AOV` vs `Cost_FP = 0.28 * AOV + 420`. Our threshold calibration tool mathematically identifies the profit-maximizing cutoff, retaining over INR 1.25 Lakhs in net profit per 9,000 orders compared to default 0.50 thresholds.
+
+2. **0.18ms Pure-Python In-Memory Tree Evaluator:**
+   Instead of loading heavy C++ machine learning runtimes that cause 2-5 second cold-start delays on serverless infrastructure, SentinelRisk parses 160 LightGBM decision trees directly into native Python structures. It executes in 0.179ms P50 latency (4,680 QPS) with zero external runtime dependencies.
+
+3. **Bipartite Graph Syndicate Clustering:**
+   Our graph engine builds an in-memory bipartite network linking User accounts to Device Fingerprints and UPI VPAs, identifying collusive multi-account fraud rings via connected component clustering in linear O(V+E) time without database roundtrips.
+
+4. **Agentic RAG Legal Dispute Engine (Visa CE3.0 & NPCI DMS):**
+   Rather than using static prompts, SentinelRisk employs an autonomous multi-step reasoning agent. The agent dynamically searches indexed card network regulations (Visa CE3.0, Mastercard 4837/4853, NPCI DMS, RBI 2FA mandate), verifies required evidence chains, and generates legally grounded rebuttal dossiers with calculated win probabilities.
+
+5. **Client-Side Hardware Telemetry SDK (sentinel.js):**
+   A drop-in checkout script silently extracts offscreen HTML5 canvas fingerprint hashes, WebGL GPU unmasked renderer strings, checkout dwell velocity, and timezone entropy directly in the browser.
+
+6. **Interactive Column Mapper (map_your_data.py):**
+   An interactive CLI with fuzzy string matching (`difflib`) auto-maps arbitrary merchant CSVs (Shopify, WooCommerce, custom exports) into our 17-feature schema with city-level RTO lookups and reusable JSON mapping configs.
 
 ---
 
@@ -66,7 +92,7 @@ SentinelRisk solves both problems in the same pipeline.
               Tool 1: search_rulebook  →  BM25 retrieval from
                       Visa CE3.0  /  Mastercard 4837  /  NPCI DMS
               Tool 2: search_past_cases  →  Precedent outcome retrieval
-              Max 3 reasoning iterations  →  Grounded rebuttal dossier
+              Max 4 reasoning iterations  →  Grounded rebuttal dossier
               Pydantic v2 schema validation  →  API response
 ```
 
@@ -78,7 +104,7 @@ SentinelRisk solves both problems in the same pipeline.
 
 Logistics benchmarks (Bain & Company, RedSeer) show forward and reverse shipping per RTO order costs INR 140 to 160. But blocking a legitimate customer destroys 28 percent gross margin plus INR 420 CAC. Standard classifiers trained with equal error weighting make this tradeoff incorrectly.
 
-**What we built:** A cost-sensitive training objective where sample weights are computed from real merchant cost structures: `cost_fn = 150 + 0.10 × order_amount` and `cost_fp = 0.28 × order_amount + 420`. The model learns to minimize net financial loss, not log-loss.
+**What we built:** A cost-sensitive training objective where sample weights are computed from real merchant cost structures: `cost_fn = 150 + 0.10 * order_amount` and `cost_fp = 0.28 * order_amount + 420`. The model learns to minimize net financial loss, not log-loss.
 
 **Finding 2: Standard classification thresholds are wrong by construction**
 
@@ -110,7 +136,7 @@ Fraud rings rotate SIM cards, UPI virtual payment addresses, and delivery names 
 
 **Agentic RAG Dispute Representment**
 
-When a dispute comes in, the agent runs a reasoning loop of up to 3 tool calls. It first retrieves card network rule chunks relevant to the dispute code using BM25 keyword scoring over a local knowledge base of Visa CE3.0, Mastercard, and NPCI guidelines. It then retrieves past case precedents to understand what evidence pattern wins for this scheme and code. The final dossier cites the retrieved rule text directly — every rebuttal is grounded in retrieved knowledge, not generated from a hardcoded template.
+When a dispute comes in, the agent runs a multi-step reasoning loop. It first retrieves card network rule chunks relevant to the dispute code using BM25 keyword scoring over a local knowledge base of Visa CE3.0, Mastercard, and NPCI guidelines. It then inspects the retrieved context, checks for gaps, retrieves past case precedents, and synthesizes a rebuttal dossier citing the retrieved rule text directly.
 
 ---
 
@@ -129,9 +155,9 @@ Evaluated on a frozen held-out split of 9,000 transactions never seen during tra
 
 At threshold 0.42, the model catches 30% of bad orders with 76% precision. The remaining 70% of at-risk orders fall in the grey zone between 0.25 and 0.70. Rather than blocking these (destroying customer LTV) or allowing them (absorbing loss), SentinelRisk applies conditional friction:
 
-Score below 0.25 — Frictionless 1-click checkout. No interruption.
-Score 0.25 to 0.70 — Step-up auth. Require INR 5 refundable UPI pre-auth or delivery OTP. Recovers up to 68% recall without losing the sale.
-Score above 0.70 — Restrict COD entirely. Require 100% upfront prepaid settlement.
+1. Score below 0.25: Frictionless 1-click checkout. No interruption.
+2. Score 0.25 to 0.70: Step-up auth. Require INR 5 refundable UPI pre-auth or delivery OTP. Recovers up to 68% recall without losing the sale.
+3. Score above 0.70: Restrict COD entirely. Require 100% upfront prepaid settlement.
 
 ---
 
@@ -140,7 +166,7 @@ Score above 0.70 — Restrict COD entirely. Require 100% upfront prepaid settlem
 | Layer | Technology | What It Does |
 | :--- | :--- | :--- |
 | Core Scoring Engine | LightGBM, Pure-Python Tree Evaluator | Submillisecond 160-tree inference with perturbation importance |
-| Agentic RAG Agent | BM25 Retrieval, Pydantic v2, Knowledge Base | 3-step reasoning loop grounding dispute dossiers in retrieved rules |
+| Agentic RAG Agent | BM25 Retrieval, Pydantic v2, Knowledge Base | Multi-step reasoning loop grounding dispute dossiers in retrieved rules |
 | Graph Analytics | NetworkX, Bipartite Connected Components | O(V+E) fraud ring detection with zero database latency |
 | API Layer | FastAPI, Uvicorn, ASGI | Async REST endpoints with full Pydantic request validation |
 | Streaming | Apache Kafka / Amazon MSK | Decoupled async transaction event worker at 4,600+ QPS |
