@@ -113,7 +113,6 @@ To catch the remaining 70 percent of potential loss orders without declining leg
 | Graph Analytics | NetworkX, Bipartite Graphs | O(V + E) connected component syndicate ring clustering |
 | API Layer | FastAPI, Uvicorn, ASGI | High throughput asynchronous gateway endpoints |
 | Streaming Ingestion | Apache Kafka, Amazon MSK | Real time decoupled transaction event processing |
-| Containerization | Docker, Docker Compose | Production multi stage container deployment |
 | Client SDK | JavaScript (ES6+) | Canvas/WebGL device fingerprinting and dwell telemetry |
 | Testing and CI/CD | Pytest, GitHub Actions | Automated multi version matrix testing (Python 3.10 to 3.12) |
 | Cloud Infrastructure | Vercel Serverless, AWS Lambda | Zero cold start edge and serverless deployment |
@@ -163,10 +162,9 @@ Sentinel-Risk-AI/
 │   └── sample_merchant_orders.csv
 ├── scripts/
 │   ├── benchmark_latency.py   # Standalone latency and throughput benchmark harness
-│   └── evaluate_cost_curve.py # Economic loss curve calibration utility
+│   ├── evaluate_cost_curve.py # Economic loss curve calibration utility
+│   └── map_your_data.py       # Interactive column mapper for custom merchant data
 ├── tests/                     # Comprehensive pytest unit and integration test suite
-├── Dockerfile                 # Multi stage production container definition
-├── docker-compose.yml         # Local microservice orchestration
 ├── requirements.txt           # Unified dependency specifications
 ├── vercel.json                # Serverless deployment configuration
 ├── LICENSE                    # MIT Open Source License
