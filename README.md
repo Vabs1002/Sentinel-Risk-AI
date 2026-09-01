@@ -5,7 +5,7 @@
 
 ---
 
-## What Makes This Different
+## What Makes This Project Different
 
 Most fraud filters are binary blocklists — block the suspicious user or let them through. That approach destroys more merchant value than the fraud itself, because every false decline burns the gross margin of a legitimate sale plus the entire customer acquisition cost spent to get that person to checkout.
 
@@ -33,7 +33,7 @@ Over 60% of online retail orders in India rely on Cash on Delivery (COD). This c
 
 ---
 
-## Why SentinelRisk is in the Top 1% of Architectures
+## Novelty Of Architecture
 
 1. **Economic Asymmetric Loss Model (Elkan 2001):**
    Instead of optimizing for generic accuracy, SentinelRisk trains with instance-dependent loss weights derived from merchant unit economics: `Cost_FN = 150 + 0.10 * AOV` vs `Cost_FP = 0.28 * AOV + 420`. Our threshold calibration tool mathematically identifies the profit-maximizing cutoff, retaining over INR 1.25 Lakhs in net profit per 9,000 orders compared to default 0.50 thresholds.
@@ -98,7 +98,7 @@ Over 60% of online retail orders in India rely on Cash on Delivery (COD). This c
 
 ---
 
-## Research Foundations and What We Built
+## Research Foundations and What I Built
 
 **Finding 1: The asymmetry of fraud error costs**
 
@@ -176,7 +176,7 @@ At threshold 0.42, the model catches 30% of bad orders with 76% precision. The r
 
 ---
 
-## Using SentinelRisk With Your Own Data
+## SETUP OF SentinelRisk With The Company's Own Data
 
 **Method 1: Drop-in SDK (zero backend changes)**
 
