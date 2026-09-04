@@ -9,3 +9,6 @@ dependencies = [
     "uvicorn>=0.29.0",
     "networkx>=3.2.0",
 ]
+
+[tool.vercel]
+entrypoint = "api/index.py:app"
