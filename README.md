@@ -13,6 +13,16 @@ SentinelRisk was built on one core insight: **risk control is an economic optimi
 
 This combination — cost-sensitive gradient boosting, submillisecond pure-Python inference, graph-based syndicate detection, and Agentic RAG dispute resolution — runs entirely serverlessly on Vercel with zero external ML runtime dependencies.
 
+### Platform Architecture & Ecosystem Fit
+
+SentinelRisk is an infrastructure layer designed to be deployed by a payment aggregator like Razorpay.
+
+Just as Razorpay provides payment settlement APIs to merchants, SentinelRisk provides them with margin defense intelligence.
+
+For the payment gateway, it prevents collusive syndicate attacks, runs under 0.2 milliseconds at zero cold-start latency, and protects network dispute ratios.
+
+For the merchant, it requires zero machine learning expertise — they either receive it natively within Razorpay's checkout flow or drop in `sentinel.js` to protect their margins, eliminate RTO losses, and automate Visa CE3.0 chargeback representment.
+
 ---
 
 ## The Real-World Business Problem (The Why)
