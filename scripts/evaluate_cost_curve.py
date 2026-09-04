@@ -9,13 +9,20 @@ import sys
 import pandas as pd
 import numpy as np
 
+# Ensure Windows terminal outputs UTF-8 cleanly
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from backend.app.ml.pure_tree_engine import PureTreeEvaluator, FEATURE_COLUMNS
 
 
 def bar(value: float, max_val: float, width: int = 25) -> str:
     filled = int(round(abs(value) / max(abs(max_val), 1) * width))
-    char   = "█" if value >= 0 else "░"
+    char   = "#" if value >= 0 else "."
     return char * filled + " " * (width - filled)
 
 
@@ -74,14 +81,14 @@ def evaluate_cost_curve(
     print("\n" + "=" * W)
     print("  SENTINEL-RISK   PROFIT-CURVE CALIBRATION   (Cost-Sensitive Threshold Optimization)")
     print(f"  Test Set: {len(df):,} orders   |   Baseline Loss Rate: {y_true.mean():.1%}"
-          f"   |   Cost FN = INR {fn_base} + {fn_pct:.0%}×AOV   |   Cost FP = {margin_pct:.0%}×AOV + INR {cac_inr:.0f}")
+          f"   |   Cost FN = INR {fn_base} + {fn_pct:.0%}*AOV   |   Cost FP = {margin_pct:.0%}*AOV + INR {cac_inr:.0f}")
     print("=" * W)
-    print(f"  {'θ':>5}  {'Prec%':>7}  {'Rec%':>7}  {'TP':>6}  {'FP':>6}"
+    print(f"  {'Theta':>5}  {'Prec%':>7}  {'Rec%':>7}  {'TP':>6}  {'FP':>6}"
           f"  {'Loss Saved (INR)':>18}  {'Friction (INR)':>16}  {'Net Value (INR)':>18}  {'NEV Bar':}")
     print("  " + "-" * (W - 2))
 
     for r in results:
-        star  = "  ◄ OPTIMAL" if r["th"] == best["th"] else ""
+        star  = "  <- OPTIMAL" if r["th"] == best["th"] else ""
         barchart = bar(r["nev"], max_nev)
         nev_str  = f"+{r['nev']:>12,}" if r["nev"] >= 0 else f"{r['nev']:>13,}"
         print(
@@ -92,15 +99,15 @@ def evaluate_cost_curve(
         )
 
     print("=" * W)
-    print(f"\n  Elkan (2001) optimal threshold:  θ* = C_FP / (C_FP + C_FN)")
+    print(f"\n  Elkan (2001) optimal threshold:  theta* = C_FP / (C_FP + C_FN)")
     avg_order = float(np.mean(amounts))
     c_fp_avg  = margin_pct * avg_order + cac_inr
     c_fn_avg  = fn_base + fn_pct * avg_order
     elkan_th  = round(c_fp_avg / (c_fp_avg + c_fn_avg), 3)
-    print(f"  Average order INR {avg_order:,.0f}  →  C_FP = {c_fp_avg:,.0f}   C_FN = {c_fn_avg:,.0f}")
-    print(f"  θ* = {c_fp_avg:,.0f} / ({c_fp_avg:,.0f} + {c_fn_avg:,.0f}) = {elkan_th}")
-    print(f"\n  Empirically Optimal  θ = {best['th']}   Net Economic Value = INR {best['nev']:,}")
-    print(f"  At θ = {best['th']}:  {best['tp']} true positives caught,  {best['fp']} legitimate orders stepped-up")
+    print(f"  Average order INR {avg_order:,.0f}  ->  C_FP = {c_fp_avg:,.0f}   C_FN = {c_fn_avg:,.0f}")
+    print(f"  theta* = {c_fp_avg:,.0f} / ({c_fp_avg:,.0f} + {c_fn_avg:,.0f}) = {elkan_th}")
+    print(f"\n  Empirically Optimal  Theta = {best['th']}   Net Economic Value = INR {best['nev']:,}")
+    print(f"  At Theta = {best['th']}:  {best['tp']} true positives caught,  {best['fp']} legitimate orders stepped-up")
     print("=" * W + "\n")
 
     return results
@@ -108,3 +115,4 @@ def evaluate_cost_curve(
 
 if __name__ == "__main__":
     evaluate_cost_curve()
+
