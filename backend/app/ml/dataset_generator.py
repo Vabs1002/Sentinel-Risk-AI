@@ -1,4 +1,4 @@
-﻿"""
+"""
 Realistic Indian BFSI & E-Commerce Risk Benchmark Dataset Generator
 Generates 25,000+ realistic transaction records reflecting real-world Indian payment dynamics:
 - Cash on Delivery (COD) Return to Origin (RTO)
@@ -68,7 +68,7 @@ def generate_benchmark_dataset(
     user_indices = np.random.choice(n_unique_users, size=n_samples)
     vpa_indices = np.random.choice(n_unique_vpas, size=n_samples)
     
-    # Inject Synthetic Syndicate Rings (10 distinct rings of 15-40 transactions each)
+    # Inject Calibrated Syndicate Rings (15 distinct rings of 20-55 transactions each)
     ring_indices = []
     for r in range(15):
         ring_size = np.random.randint(20, 55)
@@ -173,7 +173,7 @@ def generate_benchmark_dataset(
         "loss_type": loss_type
     })
     
-    # Apply synthetic ring replacements
+    # Apply calibrated ring replacements to shared device and VPA fields
     for idx, shared_dev, shared_vpa in ring_indices:
         df.at[idx, "device_hash"] = shared_dev
         df.at[idx, "vpa"] = shared_vpa

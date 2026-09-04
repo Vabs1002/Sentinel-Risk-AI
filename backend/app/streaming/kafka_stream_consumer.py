@@ -60,5 +60,5 @@ class SentinelKafkaWorker:
             "policy_action": action,
             "inference_latency_ms": latency_ms,
             "timestamp_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "evaluated_by": "SentinelRisk-Kafka-Worker-v1.2"
+            "evaluated_by": "SentinelRisk-Kafka-Worker-v2.0"
         }

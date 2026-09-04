@@ -2,6 +2,7 @@ fastapi>=0.110.0
 pydantic>=2.6.0
 python-multipart>=0.0.9
 uvicorn>=0.29.0
+networkx>=3.2.0
 
 # Optional: LLM-powered dispute rebuttal generation
 # Set GEMINI_API_KEY environment variable to activate.
