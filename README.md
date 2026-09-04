@@ -176,69 +176,55 @@ At threshold 0.42, the model catches 30% of bad orders with 76% precision. The r
 
 ---
 
-## SETUP OF SentinelRisk With The Company's Own Data
+## Connecting And Evaluating With Your Own Merchant Data
 
-**Method 1: Drop-in SDK (zero backend changes)**
+**Benchmark Training vs. Live Merchant Data:**
+For this hackathon submission, I trained the baseline model on a 30,000-order benchmark calibrated to published RedSeer and Bain & Company Indian logistics distributions. This protects sensitive merchant Personally Identifiable Information (PII) and proprietary chargeback records while providing an end-to-end mathematical proof of concept.
 
-Include one script tag on your checkout page:
+Merchants and evaluators can connect their own data in three ways:
 
-```html
-<script src="https://sentinel-risk-ai.vercel.app/sentinel.js"></script>
-```
+1. **Score Live Orders Immediately (Frontend SDK or Backend API):**
+   Evaluate any live transaction in 0.30 milliseconds. The 160-tree engine computes real loss propensity on the fly.
 
-Then call at order submission:
+   Include the drop-in SDK on your checkout page (zero backend changes):
+   ```html
+   <script src="https://sentinel-risk-ai.vercel.app/sentinel.js"></script>
+   ```
+   Or call the REST API from your backend / payment webhook:
+   ```bash
+   curl -X POST https://sentinel-risk-ai.vercel.app/api/v1/risk/score \
+     -H "Content-Type: application/json" \
+     -d '{
+       "order_id": "ORD-LIVE-77102",
+       "order_amount": 4200.0,
+       "payment_mode": 0,
+       "is_cod": 1,
+       "pincode_historical_rto": 0.38,
+       "device_order_count_24h": 4,
+       "user_historical_rto": 0.0
+     }'
+   ```
+   Missing fields default safely to low-risk values — the model still scores with whatever signals you provide.
 
-```javascript
-const result = await window.SentinelRisk.evaluateOrder({
-  amount: 3499,
-  payment_mode: 'COD',
-  pincode_rto: 0.28,
-  cart_items: 2
-});
+2. **Bulk-Score Your Existing Merchant CSV (Batch Processing):**
+   If your historical orders use different column names (Shopify, WooCommerce, custom database exports), run the interactive column mapper:
+   ```bash
+   python scripts/map_your_data.py --input my_shopify_orders.csv
+   ```
+   It auto-detects column names using fuzzy matching, performs city-level RTO lookups, saves a reusable JSON mapping config, and outputs a clean 17-feature CSV ready for batch scoring.
+   
+   To score the entire batch via API:
+   ```bash
+   curl -X POST https://sentinel-risk-ai.vercel.app/api/v1/risk/upload-csv \
+     -F "file=@mapped_orders.csv"
+   ```
 
-if (result.decision === 'STEP_UP_AUTH') {
-  showOtpModal();
-} else if (result.decision === 'DECLINE') {
-  hideCodeOnDelivery();
-}
-```
-
-**Method 2: REST API from your backend**
-
-```bash
-curl -X POST https://sentinel-risk-ai.vercel.app/api/v1/risk/score \
-  -H "Content-Type: application/json" \
-  -d '{
-    "order_amount": 4200.0,
-    "payment_mode": 0,
-    "is_cod": 1,
-    "pincode_historical_rto": 0.38,
-    "device_order_count_24h": 4,
-    "user_historical_rto": 0.0
-  }'
-```
-
-Missing fields default safely to low-risk values — the model still scores with whatever signals you can provide.
-
-**Method 3: Map your existing CSV with the interactive column mapper**
-
-If your historical orders CSV uses different column names, run the interactive mapper:
-
-```bash
-python scripts/map_your_data.py --input my_shopify_orders.csv
-```
-
-It auto-detects your column names using fuzzy matching, asks you about anything it cannot resolve, saves a reusable JSON config, and outputs a transformed CSV ready to upload or retrain on.
-
-**Method 4: Retrain on your own merchant data**
-
-Once your data is mapped, the cost-sensitive trainer learns your merchant's specific patterns:
-
-```bash
-python backend/app/ml/cost_sensitive_trainer.py
-```
-
-The output is a new `lgbm_model.txt` calibrated to your city distribution, product categories, and customer return history.
+3. **Retrain on Your Own Merchant Return Logs in Minutes:**
+   Once your historical orders are mapped with return labels (`is_loss = 1` for RTO/chargeback, `0` for delivered), the cost-sensitive trainer learns your store's specific unit economics:
+   ```bash
+   python backend/app/ml/cost_sensitive_trainer.py
+   ```
+   The script outputs a new `lgbm_model.txt` calibrated to your product catalog, city distribution, and profit margins. The pure-Python inference engine loads it automatically with zero runtime dependencies.
 
 ---
 
