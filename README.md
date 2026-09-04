@@ -3,6 +3,8 @@
 
 **Live Demo:** https://sentinel-risk-ai.vercel.app &nbsp;&nbsp;|&nbsp;&nbsp; **Drop-in SDK:** https://sentinel-risk-ai.vercel.app/sentinel.js
 
+> **Core Insight:** Risk control is an economic optimization problem, not a classification accuracy problem. SentinelRisk does not minimize prediction error — it minimizes net financial loss calibrated to merchant unit economics (Bain & Company, RedSeer, Elkan 2001).
+
 ---
 
 ## What Makes This Project Different
