@@ -2,7 +2,7 @@
 
 This document shows exactly how SentinelRisk plugs into a Razorpay-scale payment stack.
 It covers where the engine sits in the checkout flow, what signals Razorpay already has
-that map directly to our 17-feature schema, and what a production deployment looks like.
+that map directly to the SentinelRisk 17-feature schema, and what a production deployment looks like.
 
 ---
 
@@ -38,7 +38,7 @@ Customer hits "Place Order"
 
 ## Signal Mapping — Razorpay Already Has These
 
-Every one of our 17 features maps directly to data Razorpay already collects.
+Every one of the 17 SentinelRisk features maps directly to data Razorpay already collects.
 No new data pipeline needed for an initial integration.
 
 | SentinelRisk Feature | Razorpay Data Source | Available At |

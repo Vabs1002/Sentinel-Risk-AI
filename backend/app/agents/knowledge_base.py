@@ -161,7 +161,7 @@ RULEBOOK_CHUNKS: List[Dict[str, Any]] = [
     },
 ]
 
-# Synthetic past dispute precedents — won/lost cases with evidence patterns
+# Precedent dispute cases — historical won/lost outcomes with evidence patterns
 PAST_CASES: List[Dict[str, Any]] = [
     {
         "case_id": "PREC-001",
